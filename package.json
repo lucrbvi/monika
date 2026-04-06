@@ -1,0 +1,33 @@
+{
+  "name": "monika",
+  "version": "0.0.1",
+  "private": true,
+  "description": "React renderer for the terminal, powered by Bun's markdown API",
+  "files": [
+    "dist"
+  ],
+  "type": "module",
+  "exports": {
+    ".": "./dist/index.mjs",
+    "./package.json": "./package.json"
+  },
+  "scripts": {
+    "build": "bunup",
+    "fmt": "oxfmt"
+  },
+  "dependencies": {
+    "react-reconciler": "^0.33.0"
+  },
+  "devDependencies": {
+    "@types/bun": "^1.3.11",
+    "@types/react": "^19.0.0",
+    "@types/react-reconciler": "^0.28.0",
+    "bunup": "^0.16.31",
+    "oxfmt": "^0.43.0",
+    "tsdown": "^0.21.7",
+    "typescript": "^6.0.2"
+  },
+  "peerDependencies": {
+    "react": "^19.0.0"
+  }
+}
