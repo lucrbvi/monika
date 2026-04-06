@@ -1,10 +1,10 @@
 import { Activity, Suspense, use, useState } from "react";
-import { renderCLI, useInput, useTerminal } from "./src/index";
+import { renderCLI, useClick, useInput } from "./src/index";
 
 const TABS = ["Overview", "Suspense", "Counter"] as const;
 
 const quotePromise = new Promise<string>((resolve) =>
-  setTimeout(() => resolve("The terminal is mightier than the GUI."), 1500),
+  setTimeout(() => resolve("The terminal is mightier than the GUI."), 3000),
 );
 
 function Quote() {
@@ -16,52 +16,58 @@ function Counter() {
   const [count, setCount] = useState(0);
 
   useInput(({ name }) => {
-    if (name === "=") {
-      setCount((c) => c + 1);
-    }
+    if (name === "-") setCount((c) => c - 1);
+    if (name === "+" || name === "=") setCount((c) => c + 1);
   });
 
   return (
-    <p>
-      Count: <strong>{count}</strong>
-      {" — press "}
-      <code>=</code>
-      {" to increment"}
-    </p>
+    <div>
+      <p>
+        <span onClick={() => setCount((c) => c - 1)}>{"[-]"}</span>
+        {"  " + count + "  "}
+        <span onClick={() => setCount((c) => c + 1)}>{"[+]"}</span>
+      </p>
+      <p>
+        {"Click the buttons or press "}
+        <code>-</code>
+        {" / "}
+        <code>+</code>
+      </p>
+    </div>
   );
 }
 
 function App() {
-  const { columns } = useTerminal();
   const [tab, setTab] = useState(0);
+
+  useClick();
 
   useInput(({ ctrl, name }) => {
     if (ctrl && name === "c") process.exit(0);
-    if (name === "left" && tab > 0) setTab(tab - 1);
-    if (name === "right" && tab < TABS.length - 1) setTab(tab + 1);
+    if (name === "left") setTab((t) => Math.max(0, t - 1));
+    if (name === "right") setTab((t) => Math.min(TABS.length - 1, t + 1));
   });
-
-  const tabBar = TABS.map((t, i) =>
-    i === tab ? `[${t}]` : ` ${t} `,
-  ).join(" | ");
 
   return (
     <div>
       <h1>monika</h1>
-      <p>{tabBar}</p>
+      <p>
+        {TABS.map((t, i) => (
+          <span key={t}>
+            {i > 0 ? " | " : ""}
+            <span onClick={() => setTab(i)}>{i === tab ? `[${t}]` : ` ${t} `}</span>
+          </span>
+        ))}
+      </p>
       <hr />
 
       <Activity mode={tab === 0 ? "visible" : "hidden"}>
         <div>
-          <p>
-            Terminal width: <strong>{columns}</strong> columns
-          </p>
           <h2>
             This a really <b>bold</b> heading
           </h2>
           <p>
-            I am an <i>italic</i> paragraph with a{" "}
-            <a href="https://github.com">link</a>.
+            I am an <i>italic</i> paragraph with a <a href="https://github.com">link</a>.
           </p>
         </div>
       </Activity>
@@ -69,7 +75,13 @@ function App() {
       <Activity mode={tab === 1 ? "visible" : "hidden"}>
         <div>
           <h2>Suspense + use()</h2>
-          <Suspense fallback={<p><em>Loading quote...</em></p>}>
+          <Suspense
+            fallback={
+              <p>
+                <em>Loading quote...</em>
+              </p>
+            }
+          >
             <Quote />
           </Suspense>
           <p>
@@ -89,7 +101,7 @@ function App() {
       <p>
         {"Use "}
         <strong>{"<- ->"}</strong>
-        {" to switch tabs. State is preserved via Activity."}
+        {" or click tabs. State is preserved via Activity."}
       </p>
     </div>
   );

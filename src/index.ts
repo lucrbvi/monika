@@ -1,3 +1,3 @@
-export { renderTUI, renderCLI } from "./renderer.js";
-export { useInput, useTerminal } from "./hooks.js";
-export type { Key } from "./hooks.js";
+export { renderTUI, renderCLI } from "./renderer";
+export { useInput, useMouse, useClick, useTerminalResolution } from "./hooks";
+export type { Key, MouseInfo } from "./hooks";
