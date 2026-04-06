@@ -2,7 +2,7 @@
   "name": "@lucrbvi/monika",
   "version": "0.0.2",
   "private": false,
-  "description": "React renderer for the terminal, powered by Bun's markdown renderer",
+  "description": "React renderer for the terminal, powered by Bun's markdown renderer!",
   "license": "MIT",
   "author": "Luc ROBERT--VILLANUEVA <lucrobertvillanueva@gmail.com> (https://lucrbvi.bearblog.dev/)",
   "files": [
