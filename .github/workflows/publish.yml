@@ -53,4 +53,4 @@ jobs:
           PACKAGE_VERSION: ${{ steps.pkg.outputs.version }}
 
       - name: Publish
-        run: bunx npm publish *.tgz --provenance --access public
+        run: bunx npm publish --provenance --access public
