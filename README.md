@@ -6,6 +6,18 @@ It's using Bun's <a href="https://bun.com/docs/runtime/markdown#ansi-terminal-ou
 
 *You cannot use Monika without Bun (unfortunately other runtimes don't support the markdown renderer)!*
 
+## Get started
+
+Install the package using your favourite package manager.
+
+*Note: I will try to reclaim the `monika` package on NPM since it's maintainer is squatting and not maintaining it.*
+
+```bash
+bun add @lucrbvi/monika
+```
+
+Also try to get familiar with the library by reading the `example.tsx` in the root of the repo.
+
 ## Features
 
 ### Classic CLI or TUI
@@ -24,7 +36,7 @@ Example of a clickable counter:
 
 ```ts
 import { useState } from "react";
-import { renderGUI, useClick } from "monika";
+import { renderGUI, useClick } from "@lucrbvi/monika";
 
 export default function App() {
     const [count, setCount] = useState(0);

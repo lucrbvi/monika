@@ -3,6 +3,8 @@
   "version": "0.0.1",
   "private": false,
   "description": "React renderer for the terminal, powered by Bun's markdown renderer",
+  "license": "MIT",
+  "author": "Luc ROBERT--VILLANUEVA <lucrobertvillanueva@gmail.com> (https://lucrbvi.bearblog.dev/)",
   "files": [
     "dist"
   ],

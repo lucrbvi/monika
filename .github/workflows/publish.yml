@@ -1,0 +1,56 @@
+name: Publish to npm
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - package.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Setup Bun
+        uses: oven-sh/setup-bun@v2
+        with:
+          bun-version: latest
+
+      - name: Read package name and version
+        id: pkg
+        run: |
+          bun -e '
+            const pkg = JSON.parse(await Bun.file("package.json").text());
+            console.log(`name=${pkg.name}`);
+            console.log(`version=${pkg.version}`);
+          ' >> "$GITHUB_OUTPUT"
+
+      - name: Stop if version already exists
+        run: |
+          bun -e '
+            const name = process.env.PACKAGE_NAME;
+            const version = process.env.PACKAGE_VERSION;
+            const response = await fetch(`https://registry.npmjs.org/${encodeURIComponent(name)}`);
+
+            if (response.ok) {
+              const pkg = await response.json();
+
+              if (pkg.versions?.[version]) {
+                console.error(`Version ${version} already exists on npm`);
+                process.exit(1);
+              }
+            }
+          '
+        env:
+          PACKAGE_NAME: ${{ steps.pkg.outputs.name }}
+          PACKAGE_VERSION: ${{ steps.pkg.outputs.version }}
+
+      - name: Publish
+        run: bunx npm publish *.tgz --provenance --access public
