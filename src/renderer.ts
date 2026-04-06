@@ -28,7 +28,7 @@ function isText(node: AnyNode): node is TextNode {
   return "text" in node;
 }
 
-type ClickZone = { row: number; colStart: number; colEnd: number; handler: () => void };
+type ClickZone = { row: number; colStart: number; colEnd: number; target: InstanceNode };
 let activeClickZones: ClickZone[] = [];
 
 const HEADING_COLORS = [
@@ -50,7 +50,7 @@ class RenderContext {
   row = 1;
   col = 1;
   readonly zones: ClickZone[] = [];
-  private stack: { handler: () => void; row: number; col: number }[] = [];
+  private stack: { target: InstanceNode; row: number; col: number }[] = [];
 
   write(s: string) {
     this.output += s;
@@ -69,14 +69,14 @@ class RenderContext {
     }
   }
 
-  pushClick(handler: () => void) {
-    this.stack.push({ handler, row: this.row, col: this.col });
+  pushClick(target: InstanceNode) {
+    this.stack.push({ target, row: this.row, col: this.col });
   }
 
   popClick() {
     const s = this.stack.pop();
     if (s && s.row === this.row && this.col > s.col) {
-      this.zones.push({ row: s.row, colStart: s.col, colEnd: this.col - 1, handler: s.handler });
+      this.zones.push({ row: s.row, colStart: s.col, colEnd: this.col - 1, target: s.target });
     }
   }
 }
@@ -93,7 +93,7 @@ function renderNode(node: AnyNode, ctx: RenderContext): void {
   if (node.hidden) return;
 
   const click = typeof node.props.onClick === "function";
-  if (click) ctx.pushClick(node.props.onClick as () => void);
+  if (click) ctx.pushClick(node);
 
   switch (node.type) {
     case "h1":
@@ -246,7 +246,8 @@ function offsetClickZones(zones: ClickZone[], rowOffset: number): ClickZone[] {
 export function dispatchClick(column: number, row: number): boolean {
   for (const zone of activeClickZones) {
     if (row === zone.row && column >= zone.colStart && column <= zone.colEnd) {
-      zone.handler();
+      const handler = zone.target.props.onClick;
+      if (typeof handler === "function") handler();
       return true;
     }
   }
@@ -272,7 +273,9 @@ function queryCursorPosition(timeoutMs = 50): Promise<CursorPosition | null> {
   return new Promise((resolve) => {
     const stdin = process.stdin;
     const rawCapable = "setRawMode" in stdin && typeof stdin.setRawMode === "function";
-    const wasRaw = rawCapable ? Boolean((stdin as typeof stdin & { isRaw?: boolean }).isRaw) : false;
+    const wasRaw = rawCapable
+      ? Boolean((stdin as typeof stdin & { isRaw?: boolean }).isRaw)
+      : false;
     const wasPaused = typeof stdin.isPaused === "function" ? stdin.isPaused() : false;
     let done = false;
     let buffer = "";
@@ -368,8 +371,8 @@ const reconciler = Reconciler({
     for (const key in old) if (!(key in next)) return next;
     return null;
   },
-  commitUpdate: (inst: InstanceNode, payload: Props) => {
-    inst.props = { ...inst.props, ...payload };
+  commitUpdate: (inst: InstanceNode, _type: string, _prevProps: Props, nextProps: Props) => {
+    inst.props = nextProps;
   },
   commitTextUpdate: (node: TextNode, _old: string, next: string) => {
     node.text = next;
@@ -425,7 +428,18 @@ function createRoot(container: Container, element: ReactElement) {
   const onError = (e: Error) => {
     console.error("[monika]", e);
   };
-  const root = reconciler.createContainer(container, 0, null, false, null, "", onError, onError, onError, () => {});
+  const root = reconciler.createContainer(
+    container,
+    0,
+    null,
+    false,
+    null,
+    "",
+    onError,
+    onError,
+    onError,
+    () => {},
+  );
   reconciler.updateContainer(element, root, null, null);
   return root;
 }

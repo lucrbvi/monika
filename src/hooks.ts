@@ -244,7 +244,7 @@ export function useInput(callback: (key: Key) => void): void {
 
 /**
  * Listen to mouse events
- * 
+ *
  * ```ts
  * useMouse((mouse) => {
  *   console.log(mouse.button); // "left", "right", "middle", "wheel-up", "wheel-down", "none"
